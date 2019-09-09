@@ -5,8 +5,8 @@ class opencv(mama.BuildTarget):
 
     def configure(self):
         opt = [
-            "ENABLE_OMIT_FRAME_POINTER=ON", "ENABLE_PRECOMPILED_HEADERS=ON", "ENABLE_CCACHE=ON",
-            "ENABLE_PYLINT=OFF",            "ENABLE_FLAKE8=OFF",             "ENABLE_COVERAGE=OFF",
+            "ENABLE_PRECOMPILED_HEADERS=ON", "ENABLE_CCACHE=ON",
+            "ENABLE_PYLINT=OFF", "ENABLE_FLAKE8=OFF", "ENABLE_COVERAGE=OFF",
 
             "BUILD_DOCS=OFF",    "BUILD_EXAMPLES=OFF",        "BUILD_TESTS=OFF", "BUILD_PERF_TESTS=OFF",
             "BUILD_PACKAGE=OFF", "BUILD_ANDROID_SERVICE=OFF", "BUILD_JAVA=OFF",  "PYTHON_DEFAULT_AVAILABLE=OFF",
@@ -47,17 +47,36 @@ class opencv(mama.BuildTarget):
 
     def package(self):
         if self.android:
-            self.export_libs('sdk/native/staticlibs', ['world.a'])
+            self.export_libs('sdk/native/staticlibs', ['.a'])
             self.export_libs('sdk/native/3rdparty/libs')
             self.export_include('sdk/native/jni/include', build_dir=True)
         else:
-            self.export_libs('lib', ['world.a', 'world342.lib'])
+            self.export_libs('lib', ['.a', '.lib'])
             self.export_libs('3rdparty/lib')
             self.export_include('include', build_dir=True)
         
-        if self.macos:   self.export_syslib('-framework OpenGL')
-        if self.ios:     self.export_syslib('-framework OpenGLES')
-        if self.windows: self.export_syslib('opengl32.lib')
-        if self.linux:   self.export_syslib('GL') # libGL.so
-        if self.android: pass # TODO
-    
+        if self.macos or self.ios:
+            self.export_syslib("-framework Foundation")
+            self.export_syslib("-framework CoreGraphics")
+            self.export_syslib("-framework CoreMedia")
+            self.export_syslib("-framework CoreVideo")
+            self.export_syslib("-framework AVFoundation")
+            self.export_syslib("-framework CoreImage")
+            if self.ios:
+                self.export_syslib("-framework UIKit")
+                self.export_syslib('-framework OpenGLES')
+            if self.macos:
+                self.export_syslib("-framework AppKit")
+                self.export_syslib('-framework OpenGL')
+        elif self.android:
+            self.export_syslib("m")
+            self.export_syslib("camera2ndk")
+            self.export_syslib("mediandk")
+            self.export_syslib("GLESv3")
+            self.export_syslib("EGL")
+        elif self.windows:
+            self.export_syslib('opengl32.lib')
+            self.export_syslib("Vfw32")
+        elif self.linux:
+            self.export_syslib('GL') # libGL.so
+
