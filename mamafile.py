@@ -54,7 +54,7 @@ class opencv(mama.BuildTarget):
             self.export_libs('lib', ['.a', '.lib'])
             self.export_libs('3rdparty/lib')
             self.export_include('include', build_dir=True)
-        
+
         if self.macos or self.ios:
             self.export_syslib("-framework Foundation")
             self.export_syslib("-framework CoreGraphics")
@@ -78,5 +78,6 @@ class opencv(mama.BuildTarget):
             self.export_syslib('opengl32.lib')
             self.export_syslib("Vfw32")
         elif self.linux:
+            self.export_include('include/opencv4')
             self.export_syslib('GL') # libGL.so
 
