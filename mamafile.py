@@ -78,6 +78,6 @@ class opencv(mama.BuildTarget):
             self.export_syslib('opengl32.lib')
             self.export_syslib("Vfw32")
         elif self.linux:
-            self.export_include('include/opencv4')
+            self.export_include('include/opencv4', build_dir=True)
             self.export_syslib('GL') # libGL.so
 
