@@ -91,6 +91,6 @@ class opencv(mama.BuildTarget):
             self.export_syslib('gdk_pixbuf-2.0', 'libglib2.0-dev')
             self.export_syslib('gobject-2.0', 'libglib2.0-dev')
             self.export_syslib('glib-2.0', 'libglib2.0-dev')
-            self.export_syslib('gtk-x11-2.0', 'libgtk-2.0-dev')
+            #self.export_syslib('gtk-x11-2.0', 'libgtk-2.0-dev')
 
 
