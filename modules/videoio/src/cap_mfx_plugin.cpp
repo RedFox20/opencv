@@ -114,7 +114,7 @@ CvResult CV_API_CALL cv_capture_retrieve(CvPluginCapture handle, int stream_idx,
         VideoCapture_IntelMFX* instance = (VideoCapture_IntelMFX*)handle;
         Mat img;
         if (instance->retrieveFrame(stream_idx, img))
-            return callback(stream_idx, img.data, img.step, img.cols, img.rows, img.channels(), userdata);
+            return callback(stream_idx, img.data, (int)img.step, img.cols, img.rows, img.channels(), userdata);
         return CV_ERROR_FAIL;
     }
     catch(...)
@@ -188,7 +188,7 @@ CvResult CV_API_CALL cv_writer_write(CvPluginWriter handle, const unsigned char 
 static const OpenCV_VideoIO_Plugin_API_preview plugin_api_v0 =
 {
     {
-        sizeof(OpenCV_VideoIO_Plugin_API_preview), ABI_VERSION, API_VERSION,
+        sizeof(OpenCV_VideoIO_Plugin_API_preview), ABI_VERSION, 0/*API_VERSION*/,
         CV_VERSION_MAJOR, CV_VERSION_MINOR, CV_VERSION_REVISION, CV_VERSION_STATUS,
         "MediaSDK OpenCV Video I/O plugin"
     },
@@ -203,7 +203,8 @@ static const OpenCV_VideoIO_Plugin_API_preview plugin_api_v0 =
     /*  9*/cv_writer_release,
     /* 10*/cv_writer_get_prop,
     /* 11*/cv_writer_set_prop,
-    /* 12*/cv_writer_write
+    /* 12*/cv_writer_write,
+    /* 13 Writer_open_with_params*/NULL
 };
 
 } // namespace

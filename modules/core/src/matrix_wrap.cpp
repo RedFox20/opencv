@@ -33,12 +33,6 @@ Mat _InputArray::getMat_(int i) const
         return m->getMat(accessFlags).row(i);
     }
 
-    if( k == EXPR )
-    {
-        CV_Assert( i < 0 );
-        return (Mat)*((const MatExpr*)obj);
-    }
-
     if( k == MATX || k == STD_ARRAY )
     {
         CV_Assert( i < 0 );
@@ -176,17 +170,6 @@ void _InputArray::getMatVector(std::vector<Mat>& mv) const
         for( int i = 0; i < n; i++ )
             mv[i] = m.dims == 2 ? Mat(1, m.cols, m.type(), (void*)m.ptr(i)) :
                 Mat(m.dims-1, &m.size[1], m.type(), (void*)m.ptr(i), &m.step[1]);
-        return;
-    }
-
-    if( k == EXPR )
-    {
-        Mat m = *(const MatExpr*)obj;
-        int n = m.size[0];
-        mv.resize(n);
-
-        for( int i = 0; i < n; i++ )
-            mv[i] = m.row(i);
         return;
     }
 
@@ -378,7 +361,9 @@ ogl::Buffer _InputArray::getOGlBuffer() const
 
 _InputArray::KindFlag _InputArray::kind() const
 {
-    return flags & KIND_MASK;
+    KindFlag k = flags & KIND_MASK;
+    CV_DbgAssert(k != EXPR);
+    return k;
 }
 
 int _InputArray::rows(int i) const
@@ -399,12 +384,6 @@ Size _InputArray::size(int i) const
     {
         CV_Assert( i < 0 );
         return ((const Mat*)obj)->size();
-    }
-
-    if( k == EXPR )
-    {
-        CV_Assert( i < 0 );
-        return ((const MatExpr*)obj)->size();
     }
 
     if( k == UMAT )
@@ -570,6 +549,7 @@ int _InputArray::sizend(int* arrsz, int i) const
     }
     else
     {
+        CV_CheckLE(dims(i), 2, "Not supported");
         Size sz2d = size(i);
         d = 2;
         if(arrsz)
@@ -624,12 +604,6 @@ int _InputArray::dims(int i) const
     {
         CV_Assert( i < 0 );
         return ((const Mat*)obj)->dims;
-    }
-
-    if( k == EXPR )
-    {
-        CV_Assert( i < 0 );
-        return ((const MatExpr*)obj)->a.dims;
     }
 
     if( k == UMAT )
@@ -772,9 +746,6 @@ int _InputArray::type(int i) const
     if( k == UMAT )
         return ((const UMat*)obj)->type();
 
-    if( k == EXPR )
-        return ((const MatExpr*)obj)->type();
-
     if( k == MATX || k == STD_VECTOR || k == STD_ARRAY || k == STD_VECTOR_VECTOR || k == STD_BOOL_VECTOR )
         return CV_MAT_TYPE(flags);
 
@@ -861,9 +832,6 @@ bool _InputArray::empty() const
     if( k == UMAT )
         return ((const UMat*)obj)->empty();
 
-    if( k == EXPR )
-        return false;
-
     if( k == MATX || k == STD_ARRAY )
         return false;
 
@@ -933,7 +901,7 @@ bool _InputArray::isContinuous(int i) const
     if( k == UMAT )
         return i < 0 ? ((const UMat*)obj)->isContinuous() : true;
 
-    if( k == EXPR || k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
+    if( k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
         k == NONE || k == STD_VECTOR_VECTOR || k == STD_BOOL_VECTOR )
         return true;
 
@@ -947,7 +915,7 @@ bool _InputArray::isContinuous(int i) const
     if( k == STD_ARRAY_MAT )
     {
         const Mat* vv = (const Mat*)obj;
-        CV_Assert(i > 0 && i < sz.height);
+        CV_Assert(i >= 0 && i < sz.height);
         return vv[i].isContinuous();
     }
 
@@ -974,28 +942,28 @@ bool _InputArray::isSubmatrix(int i) const
     if( k == UMAT )
         return i < 0 ? ((const UMat*)obj)->isSubmatrix() : false;
 
-    if( k == EXPR || k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
+    if( k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
         k == NONE || k == STD_VECTOR_VECTOR || k == STD_BOOL_VECTOR )
         return false;
 
     if( k == STD_VECTOR_MAT )
     {
         const std::vector<Mat>& vv = *(const std::vector<Mat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return vv[i].isSubmatrix();
     }
 
     if( k == STD_ARRAY_MAT )
     {
         const Mat* vv = (const Mat*)obj;
-        CV_Assert(i < sz.height);
+        CV_Assert(i >= 0 && i < sz.height);
         return vv[i].isSubmatrix();
     }
 
     if( k == STD_VECTOR_UMAT )
     {
         const std::vector<UMat>& vv = *(const std::vector<UMat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return vv[i].isSubmatrix();
     }
 
@@ -1019,16 +987,14 @@ size_t _InputArray::offset(int i) const
         return ((const UMat*)obj)->offset;
     }
 
-    if( k == EXPR || k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
+    if( k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
         k == NONE || k == STD_VECTOR_VECTOR || k == STD_BOOL_VECTOR )
         return 0;
 
     if( k == STD_VECTOR_MAT )
     {
         const std::vector<Mat>& vv = *(const std::vector<Mat>*)obj;
-        if( i < 0 )
-            return 1;
-        CV_Assert( i < (int)vv.size() );
+        CV_Assert( i >= 0 && i < (int)vv.size() );
 
         return (size_t)(vv[i].ptr() - vv[i].datastart);
     }
@@ -1036,16 +1002,14 @@ size_t _InputArray::offset(int i) const
     if( k == STD_ARRAY_MAT )
     {
         const Mat* vv = (const Mat*)obj;
-        if( i < 0 )
-            return 1;
-        CV_Assert( i < sz.height );
+        CV_Assert( i >= 0 && i < sz.height );
         return (size_t)(vv[i].ptr() - vv[i].datastart);
     }
 
     if( k == STD_VECTOR_UMAT )
     {
         const std::vector<UMat>& vv = *(const std::vector<UMat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return vv[i].offset;
     }
 
@@ -1059,7 +1023,7 @@ size_t _InputArray::offset(int i) const
     if (k == STD_VECTOR_CUDA_GPU_MAT)
     {
         const std::vector<cuda::GpuMat>& vv = *(const std::vector<cuda::GpuMat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return (size_t)(vv[i].data - vv[i].datastart);
     }
 
@@ -1082,32 +1046,28 @@ size_t _InputArray::step(int i) const
         return ((const UMat*)obj)->step;
     }
 
-    if( k == EXPR || k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
+    if( k == MATX || k == STD_VECTOR || k == STD_ARRAY ||
         k == NONE || k == STD_VECTOR_VECTOR || k == STD_BOOL_VECTOR )
         return 0;
 
     if( k == STD_VECTOR_MAT )
     {
         const std::vector<Mat>& vv = *(const std::vector<Mat>*)obj;
-        if( i < 0 )
-            return 1;
-        CV_Assert( i < (int)vv.size() );
+        CV_Assert( i >= 0 && i < (int)vv.size() );
         return vv[i].step;
     }
 
     if( k == STD_ARRAY_MAT )
     {
         const Mat* vv = (const Mat*)obj;
-        if( i < 0 )
-            return 1;
-        CV_Assert( i < sz.height );
+        CV_Assert( i >= 0 && i < sz.height );
         return vv[i].step;
     }
 
     if( k == STD_VECTOR_UMAT )
     {
         const std::vector<UMat>& vv = *(const std::vector<UMat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return vv[i].step;
     }
 
@@ -1119,7 +1079,7 @@ size_t _InputArray::step(int i) const
     if (k == STD_VECTOR_CUDA_GPU_MAT)
     {
         const std::vector<cuda::GpuMat>& vv = *(const std::vector<cuda::GpuMat>*)obj;
-        CV_Assert((size_t)i < vv.size());
+        CV_Assert(i >= 0 && (size_t)i < vv.size());
         return vv[i].step;
     }
 
@@ -1136,14 +1096,6 @@ void _InputArray::copyTo(const _OutputArray& arr) const
     {
         Mat m = getMat();
         m.copyTo(arr);
-    }
-    else if( k == EXPR )
-    {
-        const MatExpr& e = *((MatExpr*)obj);
-        if( arr.kind() == MAT )
-            arr.getMatRef() = e;
-        else
-            Mat(e).copyTo(arr);
     }
     else if( k == UMAT )
         ((UMat*)obj)->copyTo(arr);
@@ -1288,6 +1240,7 @@ void _OutputArray::create(int d, const int* sizes, int mtype, int i,
     {
         CV_Assert( i < 0 );
         Mat& m = *(Mat*)obj;
+        CV_Assert(!(m.empty() && fixedType() && fixedSize()) && "Can't reallocate empty Mat with locked layout (probably due to misused 'const' modifier)");
         if (allowTransposed && !m.empty() &&
             d == 2 && m.dims == 2 &&
             m.type() == mtype && m.rows == sizes[1] && m.cols == sizes[0] &&
@@ -1301,13 +1254,13 @@ void _OutputArray::create(int d, const int* sizes, int mtype, int i,
             if(CV_MAT_CN(mtype) == m.channels() && ((1 << CV_MAT_TYPE(flags)) & fixedDepthMask) != 0 )
                 mtype = m.type();
             else
-                CV_CheckTypeEQ(m.type(), CV_MAT_TYPE(mtype), "");
+                CV_CheckTypeEQ(m.type(), CV_MAT_TYPE(mtype), "Can't reallocate Mat with locked type (probably due to misused 'const' modifier)");
         }
         if(fixedSize())
         {
-            CV_CheckEQ(m.dims, d, "");
+            CV_CheckEQ(m.dims, d, "Can't reallocate Mat with locked size (probably due to misused 'const' modifier)");
             for(int j = 0; j < d; ++j)
-                CV_CheckEQ(m.size[j], sizes[j], "");
+                CV_CheckEQ(m.size[j], sizes[j], "Can't reallocate Mat with locked size (probably due to misused 'const' modifier)");
         }
         m.create(d, sizes, mtype);
         return;
@@ -1317,6 +1270,7 @@ void _OutputArray::create(int d, const int* sizes, int mtype, int i,
     {
         CV_Assert( i < 0 );
         UMat& m = *(UMat*)obj;
+        CV_Assert(!(m.empty() && fixedType() && fixedSize()) && "Can't reallocate empty UMat with locked layout (probably due to misused 'const' modifier)");
         if (allowTransposed && !m.empty() &&
             d == 2 && m.dims == 2 &&
             m.type() == mtype && m.rows == sizes[1] && m.cols == sizes[0] &&
@@ -1330,13 +1284,13 @@ void _OutputArray::create(int d, const int* sizes, int mtype, int i,
             if(CV_MAT_CN(mtype) == m.channels() && ((1 << CV_MAT_TYPE(flags)) & fixedDepthMask) != 0 )
                 mtype = m.type();
             else
-                CV_CheckTypeEQ(m.type(), CV_MAT_TYPE(mtype), "");
+                CV_CheckTypeEQ(m.type(), CV_MAT_TYPE(mtype), "Can't reallocate UMat with locked type (probably due to misused 'const' modifier)");
         }
         if(fixedSize())
         {
-            CV_CheckEQ(m.dims, d, "");
+            CV_CheckEQ(m.dims, d, "Can't reallocate UMat with locked size (probably due to misused 'const' modifier)");
             for(int j = 0; j < d; ++j)
-                CV_CheckEQ(m.size[j], sizes[j], "");
+                CV_CheckEQ(m.size[j], sizes[j], "Can't reallocate UMat with locked size (probably due to misused 'const' modifier)");
         }
         m.create(d, sizes, mtype);
         return;

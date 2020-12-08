@@ -8,24 +8,55 @@
 // Usage: opencv_test_videoio --gtest_also_run_disabled_tests --gtest_filter=*videoio_camera*<tested case>*
 
 #include "test_precomp.hpp"
+#include <opencv2/core/utils/configuration.private.hpp>
 
 namespace opencv_test { namespace {
 
-static void test_readFrames(/*const*/ VideoCapture& capture, const int N = 100, Mat* lastFrame = NULL)
+static void test_readFrames(/*const*/ VideoCapture& capture, const int N = 100, Mat* lastFrame = NULL, bool testTimestamps = true)
 {
     Mat frame;
     int64 time0 = cv::getTickCount();
+    int64 sysTimePrev = time0;
+    const double cvTickFreq = cv::getTickFrequency();
+
+    double camTimePrev = 0.0;
+    const double fps = capture.get(cv::CAP_PROP_FPS);
+    const double framePeriod = fps == 0.0 ? 1. : 1.0 / fps;
+
+    const bool validTickAndFps = cvTickFreq != 0 && fps != 0.;
+    testTimestamps &= validTickAndFps;
+
     for (int i = 0; i < N; i++)
     {
         SCOPED_TRACE(cv::format("frame=%d", i));
 
         capture >> frame;
+        const int64 sysTimeCurr = cv::getTickCount();
+        const double camTimeCurr = capture.get(cv::CAP_PROP_POS_MSEC);
         ASSERT_FALSE(frame.empty());
 
+        // Do we have a previous frame?
+        if (i > 0 && testTimestamps)
+        {
+            const double sysTimeElapsedSecs = (sysTimeCurr - sysTimePrev) / cvTickFreq;
+            const double camTimeElapsedSecs = (camTimeCurr - camTimePrev) / 1000.;
+
+            // Check that the time between two camera frames and two system time calls
+            // are within 1.5 frame periods of one another.
+            //
+            // 1.5x is chosen to accomodate for a dropped frame, and an additional 50%
+            // to account for drift in the scale of the camera and system time domains.
+            EXPECT_NEAR(sysTimeElapsedSecs, camTimeElapsedSecs, framePeriod * 1.5);
+        }
+
         EXPECT_GT(cvtest::norm(frame, NORM_INF), 0) << "Complete black image has been received";
+
+        sysTimePrev = sysTimeCurr;
+        camTimePrev = camTimeCurr;
     }
+
     int64 time1 = cv::getTickCount();
-    printf("Processed %d frames on %.2f FPS\n", N, (N * cv::getTickFrequency()) / (time1 - time0 + 1));
+    printf("Processed %d frames on %.2f FPS\n", N, (N * cvTickFreq) / (time1 - time0 + 1));
     if (lastFrame) *lastFrame = frame.clone();
 }
 
@@ -103,6 +134,81 @@ TEST(DISABLED_videoio_camera, v4l_read_framesize)
     EXPECT_EQ(720, frame1280x720.rows);
 
     capture.release();
+}
+
+
+static
+utils::Paths getTestCameras()
+{
+    static utils::Paths cameras = utils::getConfigurationParameterPaths("OPENCV_TEST_CAMERA_LIST");
+    return cameras;
+}
+
+TEST(DISABLED_videoio_camera, waitAny_V4L)
+{
+    auto cameraNames = getTestCameras();
+    if (cameraNames.empty())
+       throw SkipTestException("No list of tested cameras. Use OPENCV_TEST_CAMERA_LIST parameter");
+
+    const int totalFrames = 50; // number of expected frames (summary for all cameras)
+    const int64 timeoutNS = 100 * 1000000;
+
+    const Size frameSize(640, 480);
+    const int fpsDefaultEven = 30;
+    const int fpsDefaultOdd = 15;
+
+    std::vector<VideoCapture> cameras;
+    for (size_t i = 0; i < cameraNames.size(); ++i)
+    {
+        const auto& name = cameraNames[i];
+        int fps = (int)utils::getConfigurationParameterSizeT(cv::format("OPENCV_TEST_CAMERA%d_FPS", (int)i).c_str(), (i & 1) ? fpsDefaultOdd : fpsDefaultEven);
+        std::cout << "Camera[" << i << "] = '" << name << "', fps=" << fps << std::endl;
+        VideoCapture cap(name, CAP_V4L);
+        ASSERT_TRUE(cap.isOpened()) << name;
+        EXPECT_TRUE(cap.set(CAP_PROP_FRAME_WIDTH, frameSize.width)) << name;
+        EXPECT_TRUE(cap.set(CAP_PROP_FRAME_HEIGHT, frameSize.height)) << name;
+        EXPECT_TRUE(cap.set(CAP_PROP_FPS, fps)) << name;
+        //launch cameras
+        Mat firstFrame;
+        EXPECT_TRUE(cap.read(firstFrame));
+        EXPECT_EQ(frameSize.width, firstFrame.cols);
+        EXPECT_EQ(frameSize.height, firstFrame.rows);
+        cameras.push_back(cap);
+    }
+
+    std::vector<size_t> frameFromCamera(cameraNames.size(), 0);
+    {
+        int counter = 0;
+        std::vector<int> cameraReady;
+        do
+        {
+            EXPECT_TRUE(VideoCapture::waitAny(cameras, cameraReady, timeoutNS));
+            EXPECT_FALSE(cameraReady.empty());
+            for (int idx : cameraReady)
+            {
+                //std::cout << "Reading frame from camera: " << idx << std::endl;
+                ASSERT_TRUE(idx >= 0 && (size_t)idx < cameras.size()) << idx;
+                VideoCapture& c = cameras[idx];
+                Mat frame;
+#if 1
+                ASSERT_TRUE(c.retrieve(frame)) << idx;
+#else
+                ASSERT_TRUE(c.read(frame)) << idx;
+#endif
+                EXPECT_EQ(frameSize.width, frame.cols) << idx;
+                EXPECT_EQ(frameSize.height, frame.rows) << idx;
+
+                ++frameFromCamera[idx];
+                ++counter;
+            }
+        }
+        while(counter < totalFrames);
+    }
+
+    for (size_t i = 0; i < cameraNames.size(); ++i)
+    {
+        EXPECT_GT(frameFromCamera[i], (size_t)0) << i;
+    }
 }
 
 }} // namespace

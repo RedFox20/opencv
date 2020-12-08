@@ -1,6 +1,9 @@
 Creating a video with OpenCV {#tutorial_video_write}
 ============================
 
+@prev_tutorial{tutorial_video_input_psnr_ssim}
+@next_tutorial{tutorial_kinect_openni}
+
 Goal
 ----
 
@@ -60,7 +63,7 @@ specialized video writing libraries such as *FFMpeg* or codecs as *HuffYUV*, *Co
 an alternative, create the video track with OpenCV and expand it with sound tracks or convert it to
 other formats by using video manipulation programs such as *VirtualDub* or *AviSynth*.
 
-The *VideoWriter* class
+The VideoWriter class
 -----------------------
 
 The content written here builds on the assumption you
@@ -106,7 +109,7 @@ const string NAME = source.substr(0, pAt) + argv[2][0] + ".avi";   // Form the n
     @code{.cpp}
     CV_FOURCC('P','I','M,'1') // this is an MPEG1 codec from the characters to integer
     @endcode
-    If you pass for this argument minus one than a window will pop up at runtime that contains all
+    If you pass for this argument minus one then a window will pop up at runtime that contains all
     the codec installed on your system and ask you to select the one to use:
 
     ![](images/videoCompressSelect.png)

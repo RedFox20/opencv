@@ -45,6 +45,13 @@
 #ifdef HAVE_OPENGL
 #  include "gl_core_3_1.hpp"
 #  ifdef HAVE_CUDA
+#    if (defined(__arm__) || defined(__aarch64__)) \
+         && !defined(OPENCV_SKIP_CUDA_OPENGL_ARM_WORKAROUND)
+#      include <GL/gl.h>
+#      ifndef GL_VERSION
+#        define GL_VERSION 0x1F02
+#      endif
+#    endif
 #    include <cuda_gl_interop.h>
 #  endif
 #else // HAVE_OPENGL
@@ -1682,9 +1689,14 @@ Context& initializeContextFromGL()
     if (found < 0)
         CV_Error(cv::Error::OpenCLInitError, "OpenCL: Can't create context for OpenGL interop");
 
-    Context& ctx = Context::getDefault(false);
-    initializeContextFromHandle(ctx, platforms[found], context, device);
-    return ctx;
+    cl_platform_id platform = platforms[found];
+    std::string platformName = PlatformInfo(&platform).name();
+
+    OpenCLExecutionContext clExecCtx = OpenCLExecutionContext::create(platformName, platform, context, device);
+    clReleaseDevice(device);
+    clReleaseContext(context);
+    clExecCtx.bind();
+    return const_cast<Context&>(clExecCtx.getContext());
 #endif
 }
 

@@ -3,6 +3,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
 
 -   @subpage tutorial_dnn_googlenet
 
+    *Languages:* C++
+
     *Compatibility:* \> OpenCV 3.3
 
     *Author:* Vitaliy Lyudvichenko
@@ -10,6 +12,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
     In this tutorial you will learn how to use opencv_dnn module for image classification by using GoogLeNet trained network from Caffe model zoo.
 
 -   @subpage tutorial_dnn_halide
+
+    *Languages:* Halide
 
     *Compatibility:* \> OpenCV 3.3
 
@@ -19,6 +23,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
 
 -   @subpage tutorial_dnn_halide_scheduling
 
+    *Languages:* Halide
+
     *Compatibility:* \> OpenCV 3.3
 
     *Author:* Dmitry Kurtaev
@@ -26,6 +32,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
     In this tutorial we describe the ways to schedule your networks using Halide backend in OpenCV deep learning module.
 
 -   @subpage tutorial_dnn_android
+
+    *Languages:* Java
 
     *Compatibility:* \> OpenCV 3.3
 
@@ -35,6 +43,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
 
 -   @subpage tutorial_dnn_yolo
 
+    *Languages:* C++, Python
+
     *Compatibility:* \> OpenCV 3.3.1
 
     *Author:* Alessandro de Oliveira Faria
@@ -42,6 +52,8 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
     In this tutorial you will learn how to use opencv_dnn module using yolo_object_detection with device capture, video file or image.
 
 -   @subpage tutorial_dnn_javascript
+
+    *Languages:* JavaScript
 
     *Compatibility:* \> OpenCV 3.3.1
 
@@ -51,8 +63,30 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
 
 -   @subpage tutorial_dnn_custom_layers
 
+    *Languages:* C++, Python
+
     *Compatibility:* \> OpenCV 3.4.1
 
     *Author:* Dmitry Kurtaev
 
     How to define custom layers to import networks.
+
+-   @subpage tutorial_dnn_OCR
+
+    *Languages:* C++
+
+    *Compatibility:* \> OpenCV 4.3
+
+    *Author:* Zihao Mu
+
+    In this tutorial you will learn how to use opencv_dnn module using custom OCR models.
+
+-   @subpage tutorial_dnn_text_spotting
+
+    *Languages:* C++
+
+    *Compatibility:* \> OpenCV 4.5
+
+    *Author:* Wenqing Zhang
+
+    In these tutorial, we'll introduce how to use the high-level APIs for text recognition and text detection
