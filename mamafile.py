@@ -41,7 +41,7 @@ class opencv(mama.BuildTarget):
         if self.windows:
             self.add_cl_flags('/wd4819')
         if self.linux:
-            self.add_cl_flags('-mfma')
+            self.add_cl_flags('-mfma -mf16c')
         if self.ios:
             self.disable_ninja_build() # opencv for ios blows up with Ninja
 
