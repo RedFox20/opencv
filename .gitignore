@@ -22,4 +22,7 @@ bin/
 *.log
 *.tlog
 build
+node_modules
+CMakeSettings.json
+
 mama.cmake
