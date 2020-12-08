@@ -32,7 +32,8 @@ class opencv(mama.BuildTarget):
         elif self.ios:     opt += ['IOS_ARCH=arm64', 'WITH_FFMPEG=OFF']
         elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=OFF']
         elif self.macos:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=OFF']
-        elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 'WITH_GTK=ON']
+        elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
+                                   'WITH_GTK=ON']
         self.add_cmake_options(opt)
         self.cmake_build_type = 'Release'
         self.cmake_ios_toolchain = 'platforms/ios/cmake/Toolchains/Toolchain-iPhoneOS_Xcode.cmake'
@@ -80,4 +81,6 @@ class opencv(mama.BuildTarget):
         elif self.linux:
             self.export_include('include/opencv4', build_dir=True)
             self.export_syslib('GL', 'libgl1-mesa-dev') # libGL.so
+            self.export_syslib('gtk-3.0', 'libgtk-3-dev')
+            self.export_syslib('gtkglext1 ', 'libgtkglext1-dev') # required for GUI !!!!
 
