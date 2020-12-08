@@ -24,5 +24,4 @@ bin/
 build
 node_modules
 CMakeSettings.json
-
-mama.cmake
+xcuserdata/
