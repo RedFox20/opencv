@@ -81,6 +81,15 @@ class opencv(mama.BuildTarget):
         elif self.linux:
             self.export_include('include/opencv4', build_dir=True)
             self.export_syslib('GL', 'libgl1-mesa-dev') # libGL.so
-            self.export_syslib('gtk-3.0', 'libgtk-3-dev')
-            self.export_syslib('gtkglext1 ', 'libgtkglext1-dev') # required for GUI !!!!
+            # !!!! required for GUI !!!!
+            self.export_syslib('gtk-3', 'libgtk-3-dev')
+            self.export_syslib('gdk-3', 'libgtk-3-dev')
+            self.export_syslib('cairo', 'libcairo2-dev')
+            self.export_syslib('gdk_pixbuf-2.0', 'libglib2.0-dev')
+            self.export_syslib('gobject-2.0', 'libglib2.0-dev')
+            self.export_syslib('glib-2.0', 'libglib2.0-dev')
+            self.export_syslib('gtkglext-x11-1.0', 'libgtkglext1-dev')
+            self.export_syslib('gdkglext-x11-1.0', 'libgtkglext1-dev')
+            self.export_syslib('gtk-x11-2.0', 'libgtk-2.0-dev')
+
 
