@@ -26,6 +26,7 @@ class opencv(mama.BuildTarget):
             "BUILD_opencv_nonfree=OFF",   "BUILD_SHARED_LIBS=OFF",     "BUILD_opencv_java=OFF", 
             "BUILD_opencv_python2=OFF",   "BUILD_opencv_python3=OFF",  "BUILD_opencv_xphoto=ON",
             "BUILD_opencv_dnn=ON",        "BUILD_opencv_ml=ON",
+
             "BUILD_opencv_world=ON"
         ]
         if   self.android: opt += ['BUILD_ANDROID_EXAMPLES=OFF', 'BUILD_opencv_androidcamera=ON', 'WITH_FFMPEG=OFF']
@@ -33,7 +34,7 @@ class opencv(mama.BuildTarget):
         elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=OFF']
         elif self.macos:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=OFF']
         elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
-                                   'WITH_GTK=ON']
+                                   'WITH_GTK=ON', 'WITH_GTK_2_X=OFF', 'HAVE_GTK3=OFF']
         self.add_cmake_options(opt)
         self.cmake_build_type = 'Release'
         self.cmake_ios_toolchain = 'platforms/ios/cmake/Toolchains/Toolchain-iPhoneOS_Xcode.cmake'
@@ -42,7 +43,7 @@ class opencv(mama.BuildTarget):
         if self.windows:
             self.add_cl_flags('/wd4819')
         if self.linux:
-            self.add_cl_flags('-mfma -mf16c')
+            self.add_cl_flags('-mfma')
         if self.ios:
             self.disable_ninja_build() # opencv for ios blows up with Ninja
 
@@ -85,11 +86,11 @@ class opencv(mama.BuildTarget):
             self.export_syslib('gtk-3', 'libgtk-3-dev')
             self.export_syslib('gdk-3', 'libgtk-3-dev')
             self.export_syslib('cairo', 'libcairo2-dev')
+            #self.export_syslib('gtkglext-x11-1.0', 'libgtkglext1 libgtkglext1-dev')
+            #self.export_syslib('gdkglext-x11-1.0', 'libgtkglext1 libgtkglext1-dev')
             self.export_syslib('gdk_pixbuf-2.0', 'libglib2.0-dev')
             self.export_syslib('gobject-2.0', 'libglib2.0-dev')
             self.export_syslib('glib-2.0', 'libglib2.0-dev')
-            self.export_syslib('gtkglext-x11-1.0', 'libgtkglext1-dev')
-            self.export_syslib('gdkglext-x11-1.0', 'libgtkglext1-dev')
             self.export_syslib('gtk-x11-2.0', 'libgtk-2.0-dev')
 
 
