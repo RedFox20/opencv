@@ -79,5 +79,5 @@ class opencv(mama.BuildTarget):
             self.export_syslib("Vfw32")
         elif self.linux:
             self.export_include('include/opencv4', build_dir=True)
-            self.export_syslib('GL') # libGL.so
+            self.export_syslib('GL', 'libgl1-mesa-dev') # libGL.so
 
