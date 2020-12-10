@@ -31,7 +31,8 @@ class opencv(mama.BuildTarget):
         ]
         if   self.android: opt += ['BUILD_ANDROID_EXAMPLES=OFF', 'BUILD_opencv_androidcamera=ON', 'WITH_FFMPEG=OFF']
         elif self.ios:     opt += ['IOS_ARCH=arm64', 'WITH_FFMPEG=OFF']
-        elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=OFF']
+        elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=OFF', 
+                                    'CPU_BASELINE=SSE4_1', 'CPU_DISPATCH=AVX,AVX2']
         elif self.macos:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=OFF']
         elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
                                    'WITH_GTK=ON', 'WITH_GTK_2_X=OFF', 'HAVE_GTK3=OFF']
