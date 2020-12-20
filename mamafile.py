@@ -10,7 +10,7 @@ class opencv(mama.BuildTarget):
 
             "BUILD_DOCS=OFF",    "BUILD_EXAMPLES=OFF",        "BUILD_TESTS=OFF", "BUILD_PERF_TESTS=OFF",
             "BUILD_PACKAGE=OFF", "BUILD_ANDROID_SERVICE=OFF", "BUILD_JAVA=OFF",  "PYTHON_DEFAULT_AVAILABLE=OFF",
-            "BUILD_OPENEXR=OFF", "BUILD_TIFF=OFF", "BUILD_JPEG=ON",    "BUILD_ANDROID_PROJECTS=OFF",
+            "BUILD_OPENEXR=OFF", "BUILD_TIFF=OFF", "BUILD_JPEG=ON", "BUILD_OPENJPEG=ON", "BUILD_ANDROID_PROJECTS=OFF",
             "BUILD_PNG=ON",      "BUILD_ZLIB=ON",  "BUILD_JASPER=OFF", "BUILD_ANDROID_EXAMPLES=OFF",
 
             "WITH_OPENGL=ON",    "WITH_IPP=OFF",   "WITH_OPENCL=OFF",  "WITH_1394=OFF",
@@ -54,7 +54,7 @@ class opencv(mama.BuildTarget):
             self.export_libs('sdk/native/3rdparty/libs')
             self.export_include('sdk/native/jni/include', build_dir=True)
         else:
-            self.export_libs('lib', ['.a', '.lib'])
+            self.export_libs('lib', ['.a', '.lib'], order=['opencv'])
             self.export_libs('3rdparty/lib')
             self.export_include('include', build_dir=True)
 
