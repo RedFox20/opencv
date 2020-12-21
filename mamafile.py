@@ -54,7 +54,7 @@ class opencv(mama.BuildTarget):
             self.export_libs('sdk/native/3rdparty/libs')
             self.export_include('sdk/native/jni/include', build_dir=True)
         else:
-            self.export_libs('lib', ['.a', '.lib'], order=['opencv'])
+            self.export_libs('lib', ['.a', '.lib'], order=['opencv_world', 'ade.'])
             self.export_libs('3rdparty/lib')
             self.export_include('include', build_dir=True)
 
