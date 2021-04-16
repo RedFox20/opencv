@@ -1,7 +1,8 @@
 import mama
 class opencv(mama.BuildTarget):
     def dependencies(self):
-        pass
+        if self.windows or self.linux:
+            self.add_git('libffmpeg', 'https://github.com/RedFox20/libffmpeg.git')
 
     def configure(self):
         opt = [
@@ -31,11 +32,26 @@ class opencv(mama.BuildTarget):
         ]
         if   self.android: opt += ['BUILD_ANDROID_EXAMPLES=OFF', 'BUILD_opencv_androidcamera=ON', 'WITH_FFMPEG=OFF']
         elif self.ios:     opt += ['IOS_ARCH=arm64', 'WITH_FFMPEG=OFF']
-        elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=OFF', 
+        elif self.windows: opt += ['BUILD_WITH_STATIC_CRT=OFF', 'WITH_FFMPEG=ON', 
                                     'CPU_BASELINE=SSE4_1', 'CPU_DISPATCH=AVX,AVX2']
         elif self.macos:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=OFF']
         elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
                                    'WITH_GTK=ON', 'WITH_GTK_2_X=OFF', 'HAVE_GTK3=OFF']
+
+        if self.windows or self.linux:
+            # tell OpenCV CMakeLists.txt to try FFMPEG_INCLUDE_DIRS and FFMPEG_LIBRARIES
+            ff_inc, ff_libs = self.get_target_products('libffmpeg')
+            ff_libs = ';'.join(filter(lambda path: path.endswith('.a') or path.endswith('.lib'), ff_libs.split(';')))
+            opt += [ f'FFMPEG_INCLUDE_DIRS={ff_inc}', f'FFMPEG_LIBRARIES={ff_libs}',
+                     'HAVE_FFMPEG=YES', 'HAVE_FFMPEG_WRAPPER=NO', 
+                     'OPENCV_FFMPEG_SKIP_DOWNLOAD=YES', 
+                     'OPENCV_FFMPEG_SKIP_BUILD_CHECK=NO', 
+                     'FFMPEG_libavcodec_VERSION=58',
+                     'FFMPEG_libavformat_VERSION=58',
+                     'FFMPEG_libavutil_VERSION=56',
+                     'FFMPEG_libswscale_VERSION=5',
+                     'FFMPEG_libavresample_VERSION=3' ]
+        
         self.add_cmake_options(opt)
         self.cmake_build_type = 'Release'
         self.cmake_ios_toolchain = 'platforms/ios/cmake/Toolchains/Toolchain-iPhoneOS_Xcode.cmake'
