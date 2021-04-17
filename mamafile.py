@@ -42,7 +42,7 @@ class opencv(mama.BuildTarget):
             # tell OpenCV CMakeLists.txt to try FFMPEG_INCLUDE_DIRS and FFMPEG_LIBRARIES
             ff_inc, ff_libs = self.get_target_products('libffmpeg')
             ff_libs = ';'.join(filter(lambda path: path.endswith('.a') or path.endswith('.lib'), ff_libs.split(';')))
-            opt += [ f'FFMPEG_INCLUDE_DIRS={ff_inc}', f'FFMPEG_LIBRARIES={ff_libs}',
+            opt += [ f'FFMPEG_INCLUDE_DIRS="{ff_inc}"', f'FFMPEG_LIBRARIES="{ff_libs}"',
                      'HAVE_FFMPEG=YES', 'HAVE_FFMPEG_WRAPPER=NO', 
                      'OPENCV_FFMPEG_SKIP_DOWNLOAD=YES', 
                      'OPENCV_FFMPEG_SKIP_BUILD_CHECK=NO', 
