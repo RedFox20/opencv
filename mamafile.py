@@ -45,12 +45,12 @@ class opencv(mama.BuildTarget):
             opt += [ f'FFMPEG_INCLUDE_DIRS="{ff_inc}"', f'FFMPEG_LIBRARIES="{ff_libs}"',
                      'HAVE_FFMPEG=YES', 'HAVE_FFMPEG_WRAPPER=NO', 
                      'OPENCV_FFMPEG_SKIP_DOWNLOAD=YES', 
-                     'OPENCV_FFMPEG_SKIP_BUILD_CHECK=NO', 
-                     'FFMPEG_libavcodec_VERSION=58',
-                     'FFMPEG_libavformat_VERSION=58',
-                     'FFMPEG_libavutil_VERSION=56',
-                     'FFMPEG_libswscale_VERSION=5',
-                     'FFMPEG_libavresample_VERSION=3' ]
+                     'OPENCV_FFMPEG_SKIP_BUILD_CHECK=YES', 
+                     'FFMPEG_libavcodec_VERSION=58.115.100',
+                     'FFMPEG_libavformat_VERSION=58.65.100',
+                     'FFMPEG_libavutil_VERSION=56.62.100',
+                     'FFMPEG_libswscale_VERSION=5.8.100',
+                     'FFMPEG_libavresample_VERSION=3.8.100' ]
         
         self.add_cmake_options(opt)
         self.cmake_build_type = 'Release'
