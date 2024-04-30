@@ -61,7 +61,7 @@ class opencv(mama.BuildTarget):
             self.add_cxx_flags('-I/')
         if self.windows:
             self.add_cl_flags('/wd4819')
-        if self.linux:
+        if self.linux and not self.config.is_target_arch_arm64():
             self.add_cl_flags('-mfma')
             self.add_cl_flags('-mf16c')
             self.add_cl_flags('-march=x86-64-v3')
