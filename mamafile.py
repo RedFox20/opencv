@@ -61,7 +61,7 @@ class opencv(mama.BuildTarget):
             self.add_cxx_flags('-I/')
         if self.windows:
             self.add_cl_flags('/wd4819')
-        if self.linux:
+        if self.linux and not self.config.is_target_arch_arm64():
             self.add_cl_flags('-mfma')
             self.add_cl_flags('-mf16c')
             self.add_cl_flags('-march=x86-64-v3')
@@ -72,9 +72,13 @@ class opencv(mama.BuildTarget):
         if self.android:
             self.export_libs('sdk/native/staticlibs', ['.a'])
             self.export_libs('sdk/native/3rdparty/libs')
-        else:
-            self.export_libs('lib', ['.a', '.lib'], order=['opencv_world', 'ade.'])
+        elif self.windows:
+            self.export_libs('lib', order=['opencv_world', 'ade.'])
             self.export_libs('3rdparty/lib')
+        else:
+            self.export_lib('lib/libopencv_world.a')
+            # GCC linker requires correct linker order for static libraries
+            self.export_libs('lib/opencv4/3rdparty', order=['opencv_world', 'ade.', 'libpng.', 'libjpeg', 'libopenjp', 'zlib.'])
 
         if self.macos or self.ios:
             self.export_include('include/opencv4', build_dir=True)
