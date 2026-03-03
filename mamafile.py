@@ -1,11 +1,12 @@
 import mama
+from mama.util import console
 class opencv(mama.BuildTarget):
     def dependencies(self):
         if self.windows or self.linux:
             self.add_git('libffmpeg', 'https://github.com/RedFox20/libffmpeg.git')
 
     def configure(self):
-        self.enable_cxx17()
+        self.enable_cxx20()
         opt = [
             "ENABLE_PRECOMPILED_HEADERS=ON", "ENABLE_CCACHE=ON",
             "ENABLE_PYLINT=OFF", "ENABLE_FLAKE8=OFF", "ENABLE_COVERAGE=OFF",
@@ -37,6 +38,9 @@ class opencv(mama.BuildTarget):
         elif self.macos:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=OFF']
         elif self.linux:   opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
                                    'WITH_GTK=ON', 'WITH_GTK_2_X=OFF', 'HAVE_GTK3=OFF']
+        elif self.yocto_linux:
+                           opt += ['WITH_GSTREAMER=OFF', 'WITH_GPHOTO2=OFF', 'WITH_FFMPEG=ON', 
+                                   'WITH_GTK=OFF', 'WITH_GTK_2_X=OFF', 'HAVE_GTK3=OFF']
 
         if self.windows or self.linux:
             # restrict x64 cpu baseline options, to ensure OpenCV doesn't crash on Virtual Machines
@@ -78,7 +82,11 @@ class opencv(mama.BuildTarget):
         else:
             self.export_lib('lib/libopencv_world.a')
             # GCC linker requires correct linker order for static libraries
-            self.export_libs('lib/opencv4/3rdparty', order=['opencv_world', 'ade.', 'libpng.', 'libjpeg', 'libopenjp', 'zlib.'])
+            # kleidicv_hal depends on kleidicv and kleidicv_thread, so it must come first
+            self.export_libs('lib/opencv4/3rdparty', order=[
+                'opencv_world', 'ade.', 'libpng.', 'libjpeg', 'libopenjp', 'zlib.',
+                'libkleidicv_hal.', 'libkleidicv_thread.', 'libkleidicv.'
+            ])
 
         if self.macos or self.ios:
             self.export_include('include/opencv4', build_dir=True)
